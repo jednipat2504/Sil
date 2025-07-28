@@ -11,8 +11,9 @@
       background-color: #f0f0f0;
     }
     #price {
-      font-size: 2rem;
+      font-size: 2.2rem;
       color: green;
+      margin-top: 1rem;
     }
     #updated {
       margin-top: 1rem;
@@ -39,29 +40,21 @@
         const data2 = await res2.json();
         const usdToThb = data2.rates.THB;
 
-        // คำนวณราคา THB ต่อ 15.2g
+        // แปลง USD/oz → THB/15.2g
         const gramsPerOz = 31.1035;
         const thbPerGram = (usdPerOz * usdToThb) / gramsPerOz;
         const thbPer15_2g = thbPerGram * 15.2;
 
-        document.getElementById("price").textContent = thbPer15_2g.toFixed(2) + " บาท";
+        // แสดงผลลัพธ์
+        document.getElementById('price').textContent = thbPer15_2g.toFixed(2) + ' บาท';
 
         const now = new Date();
-        document.getElementById("updated").textContent =
-          "อัปเดตล่าสุด: " + now.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+        document.getElementById('updated').textContent =
+          'อัปเดตล่าสุด: ' + now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
 
       } catch (error) {
-        console.error(error);
-        document.getElementById("price").textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูลโถ";
-        document.getElementById("updated").textContent = "";
-      }
-    }
-
-    updatePrice();
-    setInterval(updatePrice, 60000);
-  </script>
-</body>
-</html>
+        console.error('เกิดข้อผิดพลาด:', error);
+        document.getElementById('price').textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูลตัวโถ';
         document.getElementById('updated').textContent = '';
       }
     }
