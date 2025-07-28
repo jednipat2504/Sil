@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>ราคาซื้อขายเม็ดเงิน (THB/15.2g)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #f5f5f5;
+    }
+    #price {
+      font-size: 2.5rem;
+      color: #2e7d32;
+      margin-top: 1rem;
+    }
+    #updated {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>ราคาซื้อขายเม็ดเงิน (THB ต่อ 15.2 กรัม)</h1>
+  <div id="price">กำลังโหลด...</div>
+  <div id="updated"></div>
+
+  <script>
+    async function fetchSilverPriceUSD() {
+      // ดึงราคาซิลเวอร์ USD/oz จาก metals.live
+      const res = await fetch('https://api.metals.live/v1/spot/silver');
+      const data = await res.json();
+      return data[0]; // ตัวอย่าง: 29.12 USD/oz
+    }
+
+    async function fetchUsdToThbRate() {
+      // ดึงค่า USD->THB จาก exchangerate-api.com ฟรีแบบ demo
+      const res = await fetch('https://open.er-api.com/v6/latest/USD');
+      const data = await res.json();
+      if (data && data.rates && data.rates.THB) {
+        return data.rates.THB;
+      } else {
+        throw new Error('ไม่สามารถดึงอัตราแลกเปลี่ยนได้');
+      }
+    }
+
+    async function updatePrice() {
+      try {
+        const [usdPerOz, usdToThb] = await Promise.all([
+          fetchSilverPriceUSD(),
+          fetchUsdToThbRate()
+        ]);
+
+        const gramsPerOz = 31.1035;
+        const thbPerGram = (usdPerOz * usdToThb) / gramsPerOz;
+        const thbPer15_2g = thbPerGram * 15.2;
+
+        document.getElementById('price').textContent = thbPer15_2g.toFixed(2) + ' บาท';
+
+        const now = new Date();
+        document.getElementById('updated').textContent = 
+          'อัปเดตล่าสุด: ' + now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById('price').textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+        document.getElementById('updated').textContent = '';
+      }
+    }
+
+    updatePrice();
+    setInterval(updatePrice, 60000); // อัปเดตทุก 60 วินาที
+  </script>
+</body>
+</html>
