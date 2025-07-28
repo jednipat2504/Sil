@@ -8,12 +8,11 @@
       font-family: sans-serif;
       text-align: center;
       padding: 2rem;
-      background-color: #f5f5f5;
+      background-color: #f0f0f0;
     }
     #price {
-      font-size: 2.5rem;
-      color: #2e7d32;
-      margin-top: 1rem;
+      font-size: 2rem;
+      color: green;
     }
     #updated {
       margin-top: 1rem;
@@ -28,44 +27,41 @@
   <div id="updated"></div>
 
   <script>
-    async function fetchSilverPriceUSD() {
-      // ดึงราคาซิลเวอร์ USD/oz จาก metals.live
-      const res = await fetch('https://api.metals.live/v1/spot/silver');
-      const data = await res.json();
-      return data[0]; // ตัวอย่าง: 29.12 USD/oz
-    }
-
-    async function fetchUsdToThbRate() {
-      // ดึงค่า USD->THB จาก exchangerate-api.com ฟรีแบบ demo
-      const res = await fetch('https://open.er-api.com/v6/latest/USD');
-      const data = await res.json();
-      if (data && data.rates && data.rates.THB) {
-        return data.rates.THB;
-      } else {
-        throw new Error('ไม่สามารถดึงอัตราแลกเปลี่ยนได้');
-      }
-    }
-
     async function updatePrice() {
       try {
-        const [usdPerOz, usdToThb] = await Promise.all([
-          fetchSilverPriceUSD(),
-          fetchUsdToThbRate()
-        ]);
+        // ดึงราคาซิลเวอร์ USD/oz จาก CoinGecko
+        const res1 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=silver&vs_currencies=usd');
+        const data1 = await res1.json();
+        const usdPerOz = data1.silver.usd;
 
+        // ดึงค่า USD ➝ THB จาก exchangerate.host
+        const res2 = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=THB');
+        const data2 = await res2.json();
+        const usdToThb = data2.rates.THB;
+
+        // คำนวณราคา THB ต่อ 15.2g
         const gramsPerOz = 31.1035;
         const thbPerGram = (usdPerOz * usdToThb) / gramsPerOz;
         const thbPer15_2g = thbPerGram * 15.2;
 
-        document.getElementById('price').textContent = thbPer15_2g.toFixed(2) + ' บาท';
+        document.getElementById("price").textContent = thbPer15_2g.toFixed(2) + " บาท";
 
         const now = new Date();
-        document.getElementById('updated').textContent = 
-          'อัปเดตล่าสุด: ' + now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+        document.getElementById("updated").textContent =
+          "อัปเดตล่าสุด: " + now.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
 
       } catch (error) {
         console.error(error);
-        document.getElementById('price').textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+        document.getElementById("price").textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูลโถ";
+        document.getElementById("updated").textContent = "";
+      }
+    }
+
+    updatePrice();
+    setInterval(updatePrice, 60000);
+  </script>
+</body>
+</html>
         document.getElementById('updated').textContent = '';
       }
     }
